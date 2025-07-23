@@ -79,6 +79,10 @@ paths:
             schema:
               type: object
               properties:
+                username:
+                  type: string
+                email:
+                  type: string
                 photo:
                   type: string
                   format: binary

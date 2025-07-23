@@ -28,12 +28,15 @@ const updateProfile = (req, res) => {
     try {
       const user = await User.findById(req.userId);
       if (!user) return res.status(404).json({ message: 'User not found' });
+      if (req.body.username) user.username = req.body.username;
+      if (req.body.email) user.email = req.body.email;
       if (req.file) {
         const base64 = req.file.buffer.toString('base64');
         user.profilePhoto = `data:${req.file.mimetype};base64,${base64}`;
       }
       await user.save();
-      res.json(user);
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
