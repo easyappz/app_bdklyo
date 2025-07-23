@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: Social Network API
+  version: 1.0.0
+paths:
+  /api/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /api/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /api/profile:
+    get:
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+    put:
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                profilePhoto:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile updated
+  /api/posts:
+    post:
+      summary: Create a post
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Post created
+    get:
+      summary: Get posts feed
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of posts
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
