@@ -3,11 +3,10 @@ info:
   title: Social Network API
   version: 1.0.0
 paths:
-  /api/register:
+  /api/auth/register:
     post:
       summary: Register a new user
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -21,7 +20,7 @@ paths:
                   type: string
       responses:
         '201':
-          description: User registered
+          description: User created
           content:
             application/json:
               schema:
@@ -29,11 +28,12 @@ paths:
                 properties:
                   token:
                     type: string
-  /api/login:
+        '400':
+          description: Bad request
+  /api/auth/login:
     post:
       summary: Login user
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -45,7 +45,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: User logged in
+          description: Login successful
           content:
             application/json:
               schema:
@@ -53,6 +53,8 @@ paths:
                 properties:
                   token:
                     type: string
+        '400':
+          description: Invalid credentials
   /api/profile:
     get:
       summary: Get user profile
@@ -65,8 +67,10 @@ paths:
             application/json:
               schema:
                 type: object
+        '401':
+          description: Unauthorized
     put:
-      summary: Update user profile
+      summary: Update user profile (including photo)
       security:
         - bearerAuth: []
       requestBody:
@@ -75,14 +79,16 @@ paths:
             schema:
               type: object
               properties:
-                username:
-                  type: string
-                profilePhoto:
+                photo:
                   type: string
                   format: binary
       responses:
         '200':
           description: Profile updated
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
   /api/posts:
     post:
       summary: Create a post
@@ -94,7 +100,7 @@ paths:
             schema:
               type: object
               properties:
-                content:
+                text:
                   type: string
                 image:
                   type: string
@@ -102,6 +108,10 @@ paths:
       responses:
         '201':
           description: Post created
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
     get:
       summary: Get posts feed
       security:
@@ -109,6 +119,8 @@ paths:
       responses:
         '200':
           description: List of posts
+        '401':
+          description: Unauthorized
 components:
   securitySchemes:
     bearerAuth:

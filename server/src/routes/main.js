@@ -1,34 +1,26 @@
 const express = require('express');
 const { body } = require('express-validator');
 const authController = require('@src/controllers/authController');
-const userController = require('@src/controllers/userController');
+const profileController = require('@src/controllers/profileController');
 const postController = require('@src/controllers/postController');
-const auth = require('@src/middlewares/auth');
+const auth = require('@src/middleware/auth');
 
 const router = express.Router();
 
-// Auth routes
-router.post('/register', [
+router.post('/auth/register', [
   body('username').notEmpty(),
   body('email').isEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 6 })
 ], authController.register);
 
-router.post('/login', [
-  body('email').isEmail(),
-  body('password').notEmpty(),
-], authController.login);
+router.post('/auth/login', authController.login);
 
-// User routes
-router.get('/profile', auth, userController.getProfile);
-router.put('/profile', auth, [
-  body('username').optional().notEmpty(),
-], userController.updateProfile);
+router.get('/profile', auth, profileController.getProfile);
 
-// Post routes
-router.post('/posts', auth, [
-  body('content').notEmpty(),
-], postController.createPost);
+router.put('/profile', auth, profileController.updateProfile);
+
+router.post('/posts', auth, postController.createPost);
+
 router.get('/posts', auth, postController.getPosts);
 
 module.exports = router;
