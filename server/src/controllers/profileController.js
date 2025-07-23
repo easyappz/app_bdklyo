@@ -1,16 +1,4 @@
 const User = require('@src/models/User');
-const multer = require('multer');
-
-const upload = multer({
-  limits: { fileSize: 1000000 }, // 1MB
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('File is not an image'), false);
-    }
-  }
-}).single('photo');
 
 const getProfile = async (req, res) => {
   try {
@@ -22,25 +10,25 @@ const getProfile = async (req, res) => {
   }
 };
 
-const updateProfile = (req, res) => {
-  upload(req, res, async (err) => {
-    if (err) return res.status(400).json({ message: err.message });
-    try {
-      const user = await User.findById(req.userId);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      if (req.body.username) user.username = req.body.username;
-      if (req.body.email) user.email = req.body.email;
-      if (req.file) {
-        const base64 = req.file.buffer.toString('base64');
-        user.profilePhoto = `data:${req.file.mimetype};base64,${base64}`;
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const { username, email, photo } = req.body;
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (photo) {
+      if (!photo.startsWith('data:image/')) {
+        return res.status(400).json({ message: 'Invalid image format' });
       }
-      await user.save();
-      const updatedUser = await User.findById(req.userId).select('-password');
-      res.json(updatedUser);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+      user.profilePhoto = photo;
     }
-  });
+    await user.save();
+    const updatedUser = await User.findById(req.userId).select('-password');
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 module.exports = { getProfile, updateProfile };
