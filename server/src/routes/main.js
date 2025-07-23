@@ -21,6 +21,10 @@ router.put('/profile', auth, profileController.updateProfile);
 
 router.post('/posts', auth, postController.createPost);
 
-router.get('/posts', auth, postController.getPosts);
+router.get('/posts', auth, postController.getFeed);
+
+router.post('/posts/:id/like', auth, postController.likePost);
+
+router.post('/posts/:id/comment', auth, postController.commentPost);
 
 module.exports = router;

@@ -125,6 +125,52 @@ paths:
           description: List of posts
         '401':
           description: Unauthorized
+  /api/posts/{id}/like:
+    post:
+      summary: Like or unlike a post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post updated
+        '401':
+          description: Unauthorized
+        '404':
+          description: Post not found
+  /api/posts/{id}/comment:
+    post:
+      summary: Comment on a post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Post updated
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Post not found
 components:
   securitySchemes:
     bearerAuth:
