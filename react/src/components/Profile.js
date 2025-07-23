@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Group, Cell, Avatar, FormItem, Input, Button, File } from '@vkontakte/vkui';
+import { Group, Cell, Avatar, FormItem, Input, Button, File, Snackbar } from '@vkontakte/vkui';
 import { getProfile, updateProfile } from '../api/profile';
 
 function Profile() {
@@ -7,6 +7,8 @@ function Profile() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [photo, setPhoto] = useState(null);
+  const [base64Photo, setBase64Photo] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -23,18 +25,40 @@ function Profile() {
     fetchProfile();
   }, []);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        setError('Файл слишком большой. Максимальный размер: 1MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Photo(reader.result);
+        setPhoto(file);
+        setError('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdate = async () => {
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('email', email);
-    if (photo) formData.append('photo', photo);
+    if (error) return;
+    const data = {
+      username,
+      email,
+      photo: base64Photo
+    };
 
     try {
-      const updated = await updateProfile(formData);
+      const updated = await updateProfile(data);
       setProfile(updated);
       localStorage.setItem('user', JSON.stringify(updated));
+      setBase64Photo('');
+      setPhoto(null);
     } catch (error) {
       console.error(error);
+      setError('Ошибка при обновлении профиля');
     }
   };
 
@@ -53,11 +77,12 @@ function Profile() {
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </FormItem>
       <FormItem top="Фото профиля">
-        <File onChange={(e) => setPhoto(e.target.files[0])}>Выбрать фото</File>
+        <File onChange={handleFileChange}>Выбрать фото</File>
       </FormItem>
       <FormItem>
         <Button size="l" stretched onClick={handleUpdate}>Обновить профиль</Button>
       </FormItem>
+      {error && <Snackbar onClose={() => setError('')}>{error}</Snackbar>}
     </Group>
   );
 }

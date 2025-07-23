@@ -1,8 +1,8 @@
 import { instance } from './axios';
 
-export const createPost = async (formData) => {
-  const response = await instance.post('/api/posts', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+export const createPost = async (data) => {
+  const response = await instance.post('/api/posts', data, {
+    headers: { 'Content-Type': 'application/json' }
   });
   return response.data;
 };

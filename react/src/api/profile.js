@@ -5,9 +5,9 @@ export const getProfile = async () => {
   return response.data;
 };
 
-export const updateProfile = async (formData) => {
-  const response = await instance.put('/api/profile', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+export const updateProfile = async (data) => {
+  const response = await instance.put('/api/profile', data, {
+    headers: { 'Content-Type': 'application/json' }
   });
   return response.data;
 };

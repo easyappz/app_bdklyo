@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Group, Card, Text, Div, Button, FormItem, Textarea, File, Header, SimpleCell, Avatar, IconButton } from '@vkontakte/vkui';
+import { Group, Card, Text, Div, Button, FormItem, Textarea, File, Header, SimpleCell, Avatar, IconButton, Snackbar } from '@vkontakte/vkui';
 import { Icon28LikeOutline, Icon28CommentOutline } from '@vkontakte/icons';
 import { getFeed, createPost, likePost, commentPost } from '../api/posts';
 
@@ -7,6 +7,8 @@ function Feed() {
   const [posts, setPosts] = useState([]);
   const [text, setText] = useState('');
   const [image, setImage] = useState(null);
+  const [base64Image, setBase64Image] = useState('');
+  const [error, setError] = useState('');
   const [commentTexts, setCommentTexts] = useState({});
 
   useEffect(() => {
@@ -21,18 +23,39 @@ function Feed() {
     fetchPosts();
   }, []);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        setError('Файл слишком большой. Максимальный размер: 1MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Image(reader.result);
+        setImage(file);
+        setError('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreatePost = async () => {
-    const formData = new FormData();
-    formData.append('text', text);
-    if (image) formData.append('image', image);
+    if (error) return;
+    const data = {
+      text,
+      image: base64Image
+    };
 
     try {
-      const newPost = await createPost(formData);
+      const newPost = await createPost(data);
       setPosts([newPost, ...posts]);
       setText('');
       setImage(null);
+      setBase64Image('');
     } catch (error) {
       console.error(error);
+      setError('Ошибка при создании поста');
     }
   };
 
@@ -68,11 +91,12 @@ function Feed() {
           <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Что у вас нового?" />
         </FormItem>
         <FormItem>
-          <File onChange={(e) => setImage(e.target.files[0])}>Добавить изображение</File>
+          <File onChange={handleFileChange}>Добавить изображение</File>
         </FormItem>
         <FormItem>
           <Button size="l" stretched onClick={handleCreatePost}>Опубликовать</Button>
         </FormItem>
+        {error && <Snackbar onClose={() => setError('')}>{error}</Snackbar>}
       </Card>
       {posts.map(post => (
         <Card key={post._id} style={{ marginTop: 20 }}>
